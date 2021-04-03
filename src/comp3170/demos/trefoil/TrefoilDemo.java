@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.swing.JFrame;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -109,16 +110,22 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 	}
 
 	
+	private static final float ROTATION_SPEED = TAU / 4;
+	
 	private void update() {
 		long time = System.currentTimeMillis();
 		float deltaTime = (time-oldTime) / 1000f;
 		oldTime = time;
 		
-		
+		Vector3f angle = new Vector3f();
+		this.trefoil.getAngle(angle);
+		angle.y += ROTATION_SPEED * deltaTime;
+		this.trefoil.setAngle(angle);
+				
 		input.clear();
 	}
 	
-	private static final float CAMERA_DISTANCE = 3;
+	private static final float CAMERA_DISTANCE = 5;
 	private static final float CAMERA_WIDTH = 8;
 	private static final float CAMERA_HEIGHT = 8;
 	private static final float CAMERA_NEAR = 1;
