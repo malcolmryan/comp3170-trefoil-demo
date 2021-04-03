@@ -73,7 +73,7 @@ public class SceneObject {
 		colour.z = color.getBlue() / 255f;
 	}
 
-	public void draw() {
+	public void draw(Matrix4f viewMatrix, Matrix4f projectionMatrix) {
 		// does nothing by default		
 	}
 

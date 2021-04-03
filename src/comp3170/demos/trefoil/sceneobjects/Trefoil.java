@@ -20,10 +20,16 @@ public class Trefoil extends SceneObject {
 	private static final float CROSS_SECTION_SCALE = 0.4f;
 			
 	private Vector4f[] crossSection;
+	private Vector3f[] crossSectionColour;
+
 	private Vector4f[] vertices;
 	private int vertexBuffer;
 	private int[] indices;
 	private int indexBuffer;
+
+	private Vector3f[] colours;
+
+	private int colourBuffer;
 
 	
 	public Trefoil(Shader shader) {
@@ -44,7 +50,16 @@ public class Trefoil extends SceneObject {
 			new Vector4f(-1,  1, 0, 1),
 		};
 
+		this.crossSectionColour = new Vector3f[] {
+			new Vector3f(1, 0, 0),		// Red
+			new Vector3f(1, 1, 0),		// Yellow
+			new Vector3f(0, 1, 0),		// Green
+			new Vector3f(0, 0, 1),		// Blue
+		};
+
+		
 		this.vertices = new Vector4f[NSLICES * crossSection.length];
+		this.colours = new Vector3f[vertices.length];
 
 		Vector3f vUp = new Vector3f(0,0,1);
 		
@@ -91,6 +106,7 @@ public class Trefoil extends SceneObject {
 				vertices[k] = new Vector4f(crossSection[j]);
 				vertices[k].mul(scale);
 				vertices[k].mul(matrix, vertices[k]);	// v = M * S * p[j]
+				colours[k] = crossSectionColour[j];
 				
 				k++;
 			}
@@ -98,6 +114,7 @@ public class Trefoil extends SceneObject {
 		}
 		
 		this.vertexBuffer = shader.createBuffer(vertices);		
+		this.colourBuffer = shader.createBuffer(colours);		
 
 		this.indices = new int[NSLICES * crossSection.length * 2 * 3];
 		
@@ -108,12 +125,12 @@ public class Trefoil extends SceneObject {
 				int j2 = (j + 1) % crossSection.length;
 				
 				indices[k++] = i * crossSection.length + j;
-				indices[k++] = i2 * crossSection.length + j;		
 				indices[k++] = i * crossSection.length + j2;		
+				indices[k++] = i2 * crossSection.length + j;		
 				
 				indices[k++] = i2 * crossSection.length + j2;				
-				indices[k++] = i * crossSection.length + j2;				
 				indices[k++] = i2 * crossSection.length + j;			
+				indices[k++] = i * crossSection.length + j2;				
 			}
 		}
 		
@@ -122,15 +139,18 @@ public class Trefoil extends SceneObject {
 	}
 
 	@Override
-	public void draw() {
+	public void draw(Matrix4f viewMatrix, Matrix4f projectionMatrix) {
 		GL4 gl = (GL4) GLContext.getCurrentGL();
 
 		shader.enable();		
 
 		calcModelMatrix();
 		shader.setUniform("u_modelMatrix", modelMatrix);
-		shader.setUniform("u_colour", colour);
+		shader.setUniform("u_viewMatrix", viewMatrix);
+		shader.setUniform("u_projectionMatrix", projectionMatrix);
+
 		shader.setAttribute("a_position", vertexBuffer);		
+		shader.setAttribute("a_colour", colourBuffer);		
 
 //        gl.glDrawArrays(GL.GL_POINTS, 0, vertices.length);           	
 		

@@ -1,5 +1,6 @@
 package comp3170.demos.trefoil.sceneobjects;
 
+import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 import com.jogamp.opengl.GL;
@@ -36,7 +37,7 @@ public class Axes extends SceneObject {
 	
 
 	@Override
-	public void draw() {
+	public void draw(Matrix4f viewMatrix, Matrix4f projectionMatrix) {
 		GL4 gl = (GL4) GLContext.getCurrentGL();
 
 		// activate the shader
@@ -44,6 +45,8 @@ public class Axes extends SceneObject {
 
 		calcModelMatrix();
 		shader.setUniform("u_modelMatrix", modelMatrix);
+		shader.setUniform("u_viewMatrix", viewMatrix);
+		shader.setUniform("u_projectionMatrix", projectionMatrix);
 
 		// connect the vertex buffer to the a_position attribute
 		shader.setAttribute("a_position", vertexBuffer);
