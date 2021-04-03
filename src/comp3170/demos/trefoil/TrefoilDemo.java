@@ -2,6 +2,7 @@ package comp3170.demos.trefoil;
 
 import static com.jogamp.opengl.GL.GL_COLOR_BUFFER_BIT;
 
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -119,7 +120,21 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 		
 		Vector3f angle = new Vector3f();
 		this.trefoil.getAngle(angle);
-		angle.y += ROTATION_SPEED * deltaTime;
+
+		if (input.isKeyDown(KeyEvent.VK_LEFT)) {
+			angle.y += ROTATION_SPEED * deltaTime;			
+		}
+		if (input.isKeyDown(KeyEvent.VK_RIGHT)) {
+			angle.y -= ROTATION_SPEED * deltaTime;			
+		}
+		if (input.isKeyDown(KeyEvent.VK_UP)) {
+			angle.x += ROTATION_SPEED * deltaTime;			
+		}
+		if (input.isKeyDown(KeyEvent.VK_DOWN)) {
+			angle.x -= ROTATION_SPEED * deltaTime;			
+		}
+			
+		
 		this.trefoil.setAngle(angle);
 				
 		input.clear();
