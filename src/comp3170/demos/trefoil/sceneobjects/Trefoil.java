@@ -17,7 +17,7 @@ public class Trefoil extends SceneObject {
 	private static final float TAU = (float) (Math.PI * 2);
 	
 	private static final int NSLICES = 100;
-	private static final float CROSS_SECTION_SCALE = 0.2f;
+	private static final float CROSS_SECTION_SCALE = 0.4f;
 			
 	private Vector4f[] crossSection;
 	private Vector4f[] vertices;
