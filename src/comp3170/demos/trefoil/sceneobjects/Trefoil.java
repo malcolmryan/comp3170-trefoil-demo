@@ -71,8 +71,7 @@ public class Trefoil extends SceneObject {
 		Vector4f jAxis4 = new Vector4f(0,0,0,0);
 		Vector4f kAxis4 = new Vector4f(0,0,0,0);
 
-		Matrix4f scale = new Matrix4f();
-		scale.scaling(CROSS_SECTION_SCALE);
+		Matrix4f matrix = new Matrix4f();
 		
 		int k = 0;
 		for (int i = 0; i < NSLICES; i++) {
@@ -98,14 +97,14 @@ public class Trefoil extends SceneObject {
 			jAxis4.set(jAxis, 0);
 			kAxis4.set(kAxis, 0);
 			
-			// construct the transform M = [i j k T]
-			
-			Matrix4f matrix = new Matrix4f(iAxis4, jAxis4, kAxis4, origin);
+			// construct the transform M = [i j k T] * R * S
+			matrix.set(iAxis4, jAxis4, kAxis4, origin);
+			matrix.rotateZ(TAU / 4 * i / NSLICES);	// rotate by 90° after one full loop
+			matrix.scale(CROSS_SECTION_SCALE);
 			
 			for (int j = 0; j < crossSection.length; j++) {
 				vertices[k] = new Vector4f(crossSection[j]);
-				vertices[k].mul(scale);
-				vertices[k].mul(matrix, vertices[k]);	// v = M * S * p[j]
+				vertices[k].mul(matrix, vertices[k]);	// v = M p[j]
 				colours[k] = crossSectionColour[j];
 				
 				k++;
@@ -119,9 +118,9 @@ public class Trefoil extends SceneObject {
 		this.indices = new int[NSLICES * crossSection.length * 2 * 3];
 		
 		k = 0;
-		for (int i = 0; i < NSLICES; i++) {
+		for (int i = 0; i < NSLICES -1; i++) {
 			for (int j = 0; j < crossSection.length; j++) {
-				int i2 = ((i+1) % NSLICES);
+				int i2 = i + 1;
 				int j2 = (j + 1) % crossSection.length;
 				
 				indices[k++] = i * crossSection.length + j;
@@ -133,6 +132,24 @@ public class Trefoil extends SceneObject {
 				indices[k++] = i * crossSection.length + j2;				
 			}
 		}
+
+		// join the end back to the beginning with a quarter turn
+		
+		for (int j = 0; j < crossSection.length; j++) {
+			int i = NSLICES - 1;
+			int i2 = 0;
+			int j1 = (j + 1) % crossSection.length;
+			int j2 = (j + 2) % crossSection.length;
+			
+			indices[k++] = i * crossSection.length + j;
+			indices[k++] = i * crossSection.length + j1;		
+			indices[k++] = i2 * crossSection.length + j1;		
+			
+			indices[k++] = i2 * crossSection.length + j2;				
+			indices[k++] = i2 * crossSection.length + j1;			
+			indices[k++] = i * crossSection.length + j1;				
+		}
+
 		
 		this.indexBuffer = shader.createIndexBuffer(indices);
 		
