@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
@@ -89,6 +90,9 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 		
 		// set the background colour to black
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+		gl.glEnable(GL.GL_CULL_FACE);
+		gl.glCullFace(GL.GL_BACK);
 		
 		// Compile the shader
 		try {

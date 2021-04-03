@@ -99,19 +99,21 @@ public class Trefoil extends SceneObject {
 		
 		this.vertexBuffer = shader.createBuffer(vertices);		
 
-		// index buffer contains one line for each slice
-		// each line is [i, i+1]
-		this.indices = new int[NSLICES * crossSection.length * 4];
+		this.indices = new int[NSLICES * crossSection.length * 2 * 3];
 		
 		k = 0;
 		for (int i = 0; i < NSLICES; i++) {
 			for (int j = 0; j < crossSection.length; j++) {
+				int i2 = ((i+1) % NSLICES);
+				int j2 = (j + 1) % crossSection.length;
+				
 				indices[k++] = i * crossSection.length + j;
-				indices[k++] = i * crossSection.length + (j + 1) % crossSection.length;				
-
-				indices[k++] = i * crossSection.length + j;
-				indices[k++] = ((i+1) % NSLICES) * crossSection.length + j;
-			
+				indices[k++] = i2 * crossSection.length + j;		
+				indices[k++] = i * crossSection.length + j2;		
+				
+				indices[k++] = i2 * crossSection.length + j2;				
+				indices[k++] = i * crossSection.length + j2;				
+				indices[k++] = i2 * crossSection.length + j;			
 			}
 		}
 		
@@ -133,7 +135,7 @@ public class Trefoil extends SceneObject {
 //        gl.glDrawArrays(GL.GL_POINTS, 0, vertices.length);           	
 		
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-		gl.glDrawElements(GL.GL_LINES, indices.length, GL.GL_UNSIGNED_INT, 0);		
+		gl.glDrawElements(GL.GL_TRIANGLES, indices.length, GL.GL_UNSIGNED_INT, 0);		
 
 	}
 	
