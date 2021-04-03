@@ -17,7 +17,7 @@ public class Trefoil extends SceneObject {
 	private static final float TAU = (float) (Math.PI * 2);
 	
 	private static final int NSLICES = 100;
-	private static final float CROSS_SECTION_SCALE = 0.1f;
+	private static final float CROSS_SECTION_SCALE = 0.2f;
 			
 	private Vector4f[] crossSection;
 	private Vector4f[] vertices;
@@ -71,7 +71,7 @@ public class Trefoil extends SceneObject {
 
 			kAxis.x = (float) (Math.cos(t) + 4 * Math.cos(2 * t));
 			kAxis.y = (float) (-Math.sin(t) + 4 * Math.sin(2 * t));
-			kAxis.z = (float) (3 * Math.cos(3*t));		
+			kAxis.z = (float) (-3 * Math.cos(3*t));		
 			kAxis.normalize();
 				
 			vUp.cross(kAxis, iAxis);	// i = vUp x k
