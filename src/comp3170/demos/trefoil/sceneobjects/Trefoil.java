@@ -39,29 +39,53 @@ public class Trefoil extends SceneObject {
 	public Trefoil() {
 		super(ShaderLibrary.compileShader(VERTEX_SHADER, FRAGMENT_SHADER));		
 		
-		// cross section is a square:
-		//
-		//  3-----2
-		//  |     |
-		//  |  *  |    Y
-		//  |     |    |
-		//  0-----1    +--X
-				
-		this.crossSection = new Vector4f[] {
-			new Vector4f(-1, -1, 0, 1),
-			new Vector4f( 1, -1, 0, 1),
-			new Vector4f( 1,  1, 0, 1),
-			new Vector4f(-1,  1, 0, 1),
-		};
+		createCrossSection();		
+		createVertices();		
+		createIndexBuffer();
+		
+	}
 
-		this.crossSectionColour = new Vector3f[] {
-			new Vector3f(1, 0, 0),		// Red
-			new Vector3f(1, 1, 0),		// Yellow
-			new Vector3f(0, 1, 0),		// Green
-			new Vector3f(0, 0, 1),		// Blue
-		};
+	private void createIndexBuffer() {
+		this.indices = new int[NSLICES * crossSection.length * 2 * 3];
+		
+		int k = 0;
+		for (int i = 0; i < NSLICES -1; i++) {
+			for (int j = 0; j < crossSection.length; j++) {
+				int i2 = i + 1;
+				int j2 = (j + 1) % crossSection.length;
+				
+				indices[k++] = i * crossSection.length + j;
+				indices[k++] = i * crossSection.length + j2;		
+				indices[k++] = i2 * crossSection.length + j;		
+				
+				indices[k++] = i2 * crossSection.length + j2;				
+				indices[k++] = i2 * crossSection.length + j;			
+				indices[k++] = i * crossSection.length + j2;				
+			}
+		}
+
+		// join the end back to the beginning with a quarter turn
+		
+		for (int j = 0; j < crossSection.length; j++) {
+			int i = NSLICES - 1;
+			int i2 = 0;
+			int j1 = (j + 1) % crossSection.length;
+			int j2 = (j + 2) % crossSection.length;
+			
+			indices[k++] = i * crossSection.length + j;
+			indices[k++] = i * crossSection.length + j1;		
+			indices[k++] = i2 * crossSection.length + j1;		
+			
+			indices[k++] = i2 * crossSection.length + j2;				
+			indices[k++] = i2 * crossSection.length + j1;			
+			indices[k++] = i * crossSection.length + j1;				
+		}
 
 		
+		this.indexBuffer = shader.createIndexBuffer(indices);
+	}
+
+	private void createVertices() {
 		this.vertices = new Vector4f[NSLICES * crossSection.length];
 		this.colours = new Vector3f[vertices.length];
 
@@ -117,46 +141,31 @@ public class Trefoil extends SceneObject {
 		}
 		
 		this.vertexBuffer = shader.createBuffer(vertices);		
-		this.colourBuffer = shader.createBuffer(colours);		
+		this.colourBuffer = shader.createBuffer(colours);
+	}
 
-		this.indices = new int[NSLICES * crossSection.length * 2 * 3];
-		
-		k = 0;
-		for (int i = 0; i < NSLICES -1; i++) {
-			for (int j = 0; j < crossSection.length; j++) {
-				int i2 = i + 1;
-				int j2 = (j + 1) % crossSection.length;
+	private void createCrossSection() {
+		// cross section is a square:
+		//
+		//  3-----2
+		//  |     |
+		//  |  *  |    Y
+		//  |     |    |
+		//  0-----1    +--X
 				
-				indices[k++] = i * crossSection.length + j;
-				indices[k++] = i * crossSection.length + j2;		
-				indices[k++] = i2 * crossSection.length + j;		
-				
-				indices[k++] = i2 * crossSection.length + j2;				
-				indices[k++] = i2 * crossSection.length + j;			
-				indices[k++] = i * crossSection.length + j2;				
-			}
-		}
+		this.crossSection = new Vector4f[] {
+			new Vector4f(-1, -1, 0, 1),
+			new Vector4f( 1, -1, 0, 1),
+			new Vector4f( 1,  1, 0, 1),
+			new Vector4f(-1,  1, 0, 1),
+		};
 
-		// join the end back to the beginning with a quarter turn
-		
-		for (int j = 0; j < crossSection.length; j++) {
-			int i = NSLICES - 1;
-			int i2 = 0;
-			int j1 = (j + 1) % crossSection.length;
-			int j2 = (j + 2) % crossSection.length;
-			
-			indices[k++] = i * crossSection.length + j;
-			indices[k++] = i * crossSection.length + j1;		
-			indices[k++] = i2 * crossSection.length + j1;		
-			
-			indices[k++] = i2 * crossSection.length + j2;				
-			indices[k++] = i2 * crossSection.length + j1;			
-			indices[k++] = i * crossSection.length + j1;				
-		}
-
-		
-		this.indexBuffer = shader.createIndexBuffer(indices);
-		
+		this.crossSectionColour = new Vector3f[] {
+			new Vector3f(1, 0, 0),		// Red
+			new Vector3f(1, 1, 0),		// Yellow
+			new Vector3f(0, 1, 0),		// Green
+			new Vector3f(0, 0, 1),		// Blue
+		};
 	}
 
 	@Override
