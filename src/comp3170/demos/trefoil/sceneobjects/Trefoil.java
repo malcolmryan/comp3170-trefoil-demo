@@ -16,8 +16,8 @@ import comp3170.demos.trefoil.textures.TextureLibrary;
 
 public class Trefoil extends SceneObject {
 	
-	private final static String VERTEX_SHADER = "textureVertex.glsl";
-	private final static String FRAGMENT_SHADER = "textureFragment.glsl";
+	private final static String VERTEX_SHADER = "diffuseVertex.glsl";
+	private final static String FRAGMENT_SHADER = "diffuseFragment.glsl";
 
 	private static final float TAU = (float) (Math.PI * 2);
 	
@@ -27,11 +27,19 @@ public class Trefoil extends SceneObject {
 	private static final float V_MAX = 1;	
 	private static final String TEXTURE = "wood.jpg";
 			
+	private static final Vector3f AMBIENT_INTENSITY= new Vector3f(0.1f, 0.1f, 0.1f);
+	private static final Vector3f DIFFUSE_INTENSITY= new Vector3f(1f, 1f, 1f);
+	private static final Vector4f LIGHT_DIRECTION = new Vector4f(0f, 1f, 0f, 0);
+
+	private Matrix4f normalMatrix = new Matrix4f();
+	
 	private Vector4f[] crossSection;
 	private Vector3f[] crossSectionColour;
 
 	private Vector4f[] vertices;
 	private int vertexBuffer;
+	private Vector4f[] normals;
+	private int normalBuffer;
 	private Vector3f[] colours;
 	private int colourBuffer;
 	private Vector2f[] uvs;
@@ -40,6 +48,7 @@ public class Trefoil extends SceneObject {
 	private int indexBuffer;
 
 	private int texture;
+	private Vector4f[] crossSectionNormal;
 
 	
 	public Trefoil() {
@@ -73,6 +82,13 @@ public class Trefoil extends SceneObject {
 			new Vector4f(-1,  1, 0, 1),
 		};
 
+		this.crossSectionNormal = new Vector4f[] {
+			new Vector4f( 0, -1, 0, 0),
+			new Vector4f( 1,  0, 0, 0),
+			new Vector4f( 0,  1, 0, 0),
+			new Vector4f(-1,  0, 0, 0),
+		};
+
 		this.crossSectionColour = new Vector3f[] {
 			new Vector3f(1, 0, 0),		// Red
 			new Vector3f(1, 1, 0),		// Yellow
@@ -85,6 +101,7 @@ public class Trefoil extends SceneObject {
 
 	private void createVertices() {
 		this.vertices = new Vector4f[2* (NSLICES+1) * crossSection.length];
+		this.normals = new Vector4f[vertices.length];
 		this.colours = new Vector3f[vertices.length];
 		this.uvs = new Vector2f[vertices.length];
 
@@ -99,7 +116,8 @@ public class Trefoil extends SceneObject {
 		Vector4f kAxis4 = new Vector4f(0,0,0,0);
 
 		Matrix4f matrix = new Matrix4f();
-		
+				
+		// Texture coordinates:
 		//     u
 		//   0                 u_max 
 		//  0+---+---+ ... +---+
@@ -156,12 +174,14 @@ public class Trefoil extends SceneObject {
 				
 				vertices[k] = new Vector4f(crossSection[j]);
 				vertices[k].mul(matrix, vertices[k]);	// v = M p[j]
+				normals[k] = crossSectionNormal[j].mul(matrix, new Vector4f());
 				colours[k] = crossSectionColour[j];
 				uvs[k] = uv0;				
 				k++;
 
 				vertices[k] = new Vector4f(crossSection[(j+1) % crossSection.length]);
 				vertices[k].mul(matrix, vertices[k]);	// v = M p[j+1]
+				normals[k] = normals[k-1];
 				colours[k] = crossSectionColour[(j+1) % crossSection.length];
 				uvs[k] = uv1;				
 				k++;
@@ -171,6 +191,7 @@ public class Trefoil extends SceneObject {
 		}
 		
 		this.vertexBuffer = shader.createBuffer(vertices);		
+		this.normalBuffer = shader.createBuffer(normals);		
 		this.colourBuffer = shader.createBuffer(colours);
 		this.uvBuffer = shader.createBuffer(uvs);
 	}
@@ -232,15 +253,19 @@ public class Trefoil extends SceneObject {
 		shader.setUniform("u_modelMatrix", modelMatrix);
 		shader.setUniform("u_viewMatrix", viewMatrix);
 		shader.setUniform("u_projectionMatrix", projectionMatrix);
-
+		shader.setUniform("u_normalMatrix", modelMatrix.normal(normalMatrix));
+		
 		shader.setAttribute("a_position", vertexBuffer);		
 		shader.setAttribute("a_texcoord", uvBuffer);		
+		shader.setAttribute("a_normal", normalBuffer);		
 
 		gl.glActiveTexture(GL.GL_TEXTURE0);
 		gl.glBindTexture(GL.GL_TEXTURE_2D, this.texture);
 		shader.setUniform("u_texture", 0);
 		
-//        gl.glDrawArrays(GL.GL_POINTS, 0, vertices.length);           	
+		shader.setUniform("u_ambientIntensity", AMBIENT_INTENSITY);
+		shader.setUniform("u_diffuseIntensity", DIFFUSE_INTENSITY);
+		shader.setUniform("u_lightDirection", LIGHT_DIRECTION);
 		
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 		gl.glDrawElements(GL.GL_TRIANGLES, indices.length, GL.GL_UNSIGNED_INT, 0);		
