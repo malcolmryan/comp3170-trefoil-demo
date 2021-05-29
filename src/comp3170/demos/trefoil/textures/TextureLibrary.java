@@ -39,7 +39,11 @@ public class TextureLibrary {
 		int textureID = tex.getTextureObject();
 		
 		gl.glBindTexture(GL.GL_TEXTURE_2D, textureID);
-		// TODO: Set texture parameters
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
+		gl.glGenerateMipmap(GL.GL_TEXTURE_2D);
 
 		// record this texture as having been loaded
 		loadedTextures.put(filename, textureID);

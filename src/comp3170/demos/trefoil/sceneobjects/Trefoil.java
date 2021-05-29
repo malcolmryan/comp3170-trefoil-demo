@@ -16,14 +16,14 @@ import comp3170.demos.trefoil.textures.TextureLibrary;
 
 public class Trefoil extends SceneObject {
 	
-	private final static String VERTEX_SHADER = "colourVertex.glsl";
-	private final static String FRAGMENT_SHADER = "colourFragment.glsl";
+	private final static String VERTEX_SHADER = "textureVertex.glsl";
+	private final static String FRAGMENT_SHADER = "textureFragment.glsl";
 
 	private static final float TAU = (float) (Math.PI * 2);
 	
 	private static final int NSLICES = 100;
 	private static final float CROSS_SECTION_SCALE = 0.4f;
-	private static final float U_MAX = 10;
+	private static final float U_MAX = 20;
 	private static final float V_MAX = 1;	
 	private static final String TEXTURE = "wood.jpg";
 			
@@ -234,8 +234,12 @@ public class Trefoil extends SceneObject {
 		shader.setUniform("u_projectionMatrix", projectionMatrix);
 
 		shader.setAttribute("a_position", vertexBuffer);		
-		shader.setAttribute("a_colour", colourBuffer);		
+		shader.setAttribute("a_texcoord", uvBuffer);		
 
+		gl.glActiveTexture(GL.GL_TEXTURE0);
+		gl.glBindTexture(GL.GL_TEXTURE_2D, this.texture);
+		shader.setUniform("u_texture", 0);
+		
 //        gl.glDrawArrays(GL.GL_POINTS, 0, vertices.length);           	
 		
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
