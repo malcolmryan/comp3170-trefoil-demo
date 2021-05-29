@@ -1,8 +1,9 @@
 package comp3170.demos.trefoil.sceneobjects;
 
-import static com.jogamp.opengl.GL.GL_TRIANGLES;
+import java.io.IOException;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -10,8 +11,8 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLContext;
 
-import comp3170.Shader;
 import comp3170.demos.trefoil.shaders.ShaderLibrary;
+import comp3170.demos.trefoil.textures.TextureLibrary;
 
 public class Trefoil extends SceneObject {
 	
@@ -22,18 +23,23 @@ public class Trefoil extends SceneObject {
 	
 	private static final int NSLICES = 100;
 	private static final float CROSS_SECTION_SCALE = 0.4f;
+	private static final float U_MAX = 10;
+	private static final float V_MAX = 1;	
+	private static final String TEXTURE = "wood.jpg";
 			
 	private Vector4f[] crossSection;
 	private Vector3f[] crossSectionColour;
 
 	private Vector4f[] vertices;
 	private int vertexBuffer;
+	private Vector3f[] colours;
+	private int colourBuffer;
+	private Vector2f[] uvs;
+	private int uvBuffer;
 	private int[] indices;
 	private int indexBuffer;
 
-	private Vector3f[] colours;
-
-	private int colourBuffer;
+	private int texture;
 
 	
 	public Trefoil() {
@@ -43,51 +49,44 @@ public class Trefoil extends SceneObject {
 		createVertices();		
 		createIndexBuffer();
 		
+		try {
+			this.texture = TextureLibrary.loadTexture(TEXTURE);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}		
+	}
+	
+	private void createCrossSection() {
+		// cross section is a square:
+		//
+		//  3-----2
+		//  |     |
+		//  |  *  |    Y
+		//  |     |    |
+		//  0-----1    +--X
+				
+		this.crossSection = new Vector4f[] {
+			new Vector4f(-1, -1, 0, 1),
+			new Vector4f( 1, -1, 0, 1),
+			new Vector4f( 1,  1, 0, 1),
+			new Vector4f(-1,  1, 0, 1),
+		};
+
+		this.crossSectionColour = new Vector3f[] {
+			new Vector3f(1, 0, 0),		// Red
+			new Vector3f(1, 1, 0),		// Yellow
+			new Vector3f(0, 1, 0),		// Green
+			new Vector3f(0, 0, 1),		// Blue
+		};
 	}
 
-	private void createIndexBuffer() {
-		this.indices = new int[NSLICES * crossSection.length * 2 * 3];
-		
-		int k = 0;
-		for (int i = 0; i < NSLICES -1; i++) {
-			for (int j = 0; j < crossSection.length; j++) {
-				int i2 = i + 1;
-				int j2 = (j + 1) % crossSection.length;
-				
-				indices[k++] = i * crossSection.length + j;
-				indices[k++] = i * crossSection.length + j2;		
-				indices[k++] = i2 * crossSection.length + j;		
-				
-				indices[k++] = i2 * crossSection.length + j2;				
-				indices[k++] = i2 * crossSection.length + j;			
-				indices[k++] = i * crossSection.length + j2;				
-			}
-		}
 
-		// join the end back to the beginning with a quarter turn
-		
-		for (int j = 0; j < crossSection.length; j++) {
-			int i = NSLICES - 1;
-			int i2 = 0;
-			int j1 = (j + 1) % crossSection.length;
-			int j2 = (j + 2) % crossSection.length;
-			
-			indices[k++] = i * crossSection.length + j;
-			indices[k++] = i * crossSection.length + j1;		
-			indices[k++] = i2 * crossSection.length + j1;		
-			
-			indices[k++] = i2 * crossSection.length + j2;				
-			indices[k++] = i2 * crossSection.length + j1;			
-			indices[k++] = i * crossSection.length + j1;				
-		}
-
-		
-		this.indexBuffer = shader.createIndexBuffer(indices);
-	}
 
 	private void createVertices() {
-		this.vertices = new Vector4f[NSLICES * crossSection.length];
+		this.vertices = new Vector4f[2* (NSLICES+1) * crossSection.length];
 		this.colours = new Vector3f[vertices.length];
+		this.uvs = new Vector2f[vertices.length];
 
 		Vector3f vUp = new Vector3f(0,0,1);
 		
@@ -101,9 +100,19 @@ public class Trefoil extends SceneObject {
 
 		Matrix4f matrix = new Matrix4f();
 		
+		//     u
+		//   0                 u_max 
+		//  0+---+---+ ... +---+
+		//   |\  |\  |     |\  |
+		// v | \ | \ |     | \ |
+		//   |  \|  \|     |  \|
+		//  1+---+---+ ... +---+
+		//
+		
+		
 		int k = 0;
-		for (int i = 0; i < NSLICES; i++) {
-			float t = i * TAU / NSLICES;  // [0, TAU)
+		for (int i = 0; i <= NSLICES; i++) {
+			float t = i * TAU / NSLICES;  // [0, TAU]
 			
 			Vector4f origin = new Vector4f(0,0,0,1);
 			
@@ -130,43 +139,88 @@ public class Trefoil extends SceneObject {
 			matrix.rotateZ(TAU / 4 * i / NSLICES);	// rotate by 90° after one full loop
 			matrix.scale(CROSS_SECTION_SCALE);
 			
+			float u = i * U_MAX / NSLICES; // [0, U_MAX] 
+			Vector2f uv0 = new Vector2f(u,0);
+			Vector2f uv1 = new Vector2f(u,V_MAX);
+			
 			for (int j = 0; j < crossSection.length; j++) {
+				// cross section
+				//
+				//    (u,0) (u,1)
+				// (u,1) +---+ (u,0)
+				//       |   |
+				//       |   |
+				//       |   |
+				// (u,0) +---+ (u,1)
+				//    (u,1) (u,0)
+				
 				vertices[k] = new Vector4f(crossSection[j]);
 				vertices[k].mul(matrix, vertices[k]);	// v = M p[j]
 				colours[k] = crossSectionColour[j];
-				
+				uvs[k] = uv0;				
 				k++;
+
+				vertices[k] = new Vector4f(crossSection[(j+1) % crossSection.length]);
+				vertices[k].mul(matrix, vertices[k]);	// v = M p[j+1]
+				colours[k] = crossSectionColour[(j+1) % crossSection.length];
+				uvs[k] = uv1;				
+				k++;
+
 			}
 			
 		}
 		
 		this.vertexBuffer = shader.createBuffer(vertices);		
 		this.colourBuffer = shader.createBuffer(colours);
+		this.uvBuffer = shader.createBuffer(uvs);
 	}
 
-	private void createCrossSection() {
-		// cross section is a square:
-		//
-		//  3-----2
-		//  |     |
-		//  |  *  |    Y
-		//  |     |    |
-		//  0-----1    +--X
+	private void createIndexBuffer() {
+		this.indices = new int[NSLICES * crossSection.length * 2 * 3];
+		
+		//  i
+		//   0   1   2     n-1 n
+		//j 0+---+---+ ... +---+
+		//   |\  |\  |     |\  |
+		// 0 | \ | \ |     | \ |
+		//   |  \|  \|     |  \|
+		//  1+---+---+ ... +---+
+		//  2+---+---+ ... +---+
+		//   |\  |\  |     |\  |
+		// 1 | \ | \ |     | \ |
+		//   |  \|  \|     |  \|
+		//  3+---+---+ ... +---+
+		//  4+---+---+ ... +---+
+		//   |\  |\  |     |\  |
+		// 2 | \ | \ |     | \ |
+		//   |  \|  \|     |  \|
+		//  5+---+---+ ... +---+
+		//  6+---+---+ ... +---+
+		//   |\  |\  |     |\  |
+		// 3 | \ | \ |     | \ |
+		//   |  \|  \|     |  \|
+		//  7+---+---+ ... +---+
+		
+		
+		int k = 0;
+		for (int i = 0; i < NSLICES; i++) {
+			for (int j = 0; j < crossSection.length; j++) {
+				int i2 = i + 1;
 				
-		this.crossSection = new Vector4f[] {
-			new Vector4f(-1, -1, 0, 1),
-			new Vector4f( 1, -1, 0, 1),
-			new Vector4f( 1,  1, 0, 1),
-			new Vector4f(-1,  1, 0, 1),
-		};
+				indices[k++] = i * crossSection.length * 2 + 2 * j;
+				indices[k++] = i * crossSection.length * 2 + 2 * j + 1;		
+				indices[k++] = i2 * crossSection.length * 2 + 2 * j;		
+				
+				indices[k++] = i2 * crossSection.length * 2 + 2 * j + 1;				
+				indices[k++] = i2 * crossSection.length * 2 + 2 * j;			
+				indices[k++] = i * crossSection.length * 2 + 2 * j + 1;				
+			}
+		}
 
-		this.crossSectionColour = new Vector3f[] {
-			new Vector3f(1, 0, 0),		// Red
-			new Vector3f(1, 1, 0),		// Yellow
-			new Vector3f(0, 1, 0),		// Green
-			new Vector3f(0, 0, 1),		// Blue
-		};
+		
+		this.indexBuffer = shader.createIndexBuffer(indices);
 	}
+
 
 	@Override
 	public void draw(Matrix4f viewMatrix, Matrix4f projectionMatrix) {
