@@ -38,11 +38,6 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 
 	private GLCanvas canvas;
 	
-	final private File DIRECTORY = new File("src/comp3170/demos/trefoil"); 
-	final private String SIMPLE_VERTEX_SHADER = "vertex.glsl";
-	final private String SIMPLE_FRAGMENT_SHADER = "fragment.glsl";
-	final private String COLOUR_VERTEX_SHADER = "colourVertex.glsl";
-	final private String COLOUR_FRAGMENT_SHADER = "colourFragment.glsl";
 
 	private Animator animator;
 	private long oldTime;
@@ -97,31 +92,11 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 		gl.glEnable(GL.GL_CULL_FACE);
 		gl.glCullFace(GL.GL_BACK);
 		
-		Shader simpleShader = compileShader(SIMPLE_VERTEX_SHADER, SIMPLE_FRAGMENT_SHADER);
-		Shader colourShader = compileShader(COLOUR_VERTEX_SHADER, COLOUR_FRAGMENT_SHADER);
-
-		this.axes = new Axes(simpleShader);
-		this.trefoil = new Trefoil(colourShader);
+		this.axes = new Axes();
+		this.trefoil = new Trefoil();
 		
 		this.viewMatrix = new Matrix4f();
 		this.projectionMatrix = new Matrix4f();
-	}
-
-	private Shader compileShader(String vertex, String fragment) {
-		try {
-			File vertexShader = new File(DIRECTORY, vertex);
-			File fragementShader = new File(DIRECTORY, fragment);
-			return new Shader(vertexShader, fragementShader);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		} catch (GLException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-		
-		// should never happen
-		return null;
 	}
 
 	

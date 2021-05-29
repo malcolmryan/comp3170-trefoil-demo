@@ -11,9 +11,13 @@ import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLContext;
 
 import comp3170.Shader;
+import comp3170.demos.trefoil.shaders.ShaderLibrary;
 
 public class Trefoil extends SceneObject {
 	
+	private final static String VERTEX_SHADER = "colourVertex.glsl";
+	private final static String FRAGMENT_SHADER = "colourFragment.glsl";
+
 	private static final float TAU = (float) (Math.PI * 2);
 	
 	private static final int NSLICES = 100;
@@ -32,8 +36,8 @@ public class Trefoil extends SceneObject {
 	private int colourBuffer;
 
 	
-	public Trefoil(Shader shader) {
-		super(shader);		
+	public Trefoil() {
+		super(ShaderLibrary.compileShader(VERTEX_SHADER, FRAGMENT_SHADER));		
 		
 		// cross section is a square:
 		//

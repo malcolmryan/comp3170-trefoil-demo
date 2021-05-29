@@ -8,17 +8,21 @@ import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLContext;
 
 import comp3170.Shader;
+import comp3170.demos.trefoil.shaders.ShaderLibrary;
 
 public class Axes extends SceneObject {
 	
+	private final static String VERTEX_SHADER = "vertex.glsl";
+	private final static String FRAGMENT_SHADER = "fragment.glsl";
+
 	private Vector4f[] vertices;
 	private int vertexBuffer;
 	private int indexBufferX;
 	private int indexBufferY;
 	private int indexBufferZ;
 
-	public Axes(Shader shader) {
-		super(shader);
+	public Axes() {
+		super(ShaderLibrary.compileShader(VERTEX_SHADER, FRAGMENT_SHADER));
 		
 		// A set of i,j,k axes		
 		
