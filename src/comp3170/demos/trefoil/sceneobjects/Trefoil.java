@@ -11,6 +11,7 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLContext;
 
+import comp3170.GLBuffers;
 import comp3170.demos.trefoil.shaders.ShaderLibrary;
 import comp3170.demos.trefoil.textures.TextureLibrary;
 
@@ -190,10 +191,10 @@ public class Trefoil extends SceneObject {
 			
 		}
 		
-		this.vertexBuffer = shader.createBuffer(vertices);		
-		this.normalBuffer = shader.createBuffer(normals);		
-		this.colourBuffer = shader.createBuffer(colours);
-		this.uvBuffer = shader.createBuffer(uvs);
+		this.vertexBuffer = GLBuffers.createBuffer(vertices);		
+		this.normalBuffer = GLBuffers.createBuffer(normals);		
+		this.colourBuffer = GLBuffers.createBuffer(colours);
+		this.uvBuffer = GLBuffers.createBuffer(uvs);
 	}
 
 	private void createIndexBuffer() {
@@ -239,7 +240,7 @@ public class Trefoil extends SceneObject {
 		}
 
 		
-		this.indexBuffer = shader.createIndexBuffer(indices);
+		this.indexBuffer = GLBuffers.createIndexBuffer(indices);
 	}
 
 

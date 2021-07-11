@@ -7,6 +7,7 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLContext;
 
+import comp3170.GLBuffers;
 import comp3170.Shader;
 import comp3170.demos.trefoil.shaders.ShaderLibrary;
 
@@ -32,11 +33,11 @@ public class Axes extends SceneObject {
 			new Vector4f(0,1,0,1),
 			new Vector4f(0,0,1,1),				
 		};
-		this.vertexBuffer = shader.createBuffer(vertices);
+		this.vertexBuffer = GLBuffers.createBuffer(vertices);
 
-		this.indexBufferX = shader.createIndexBuffer(new int[] {0,1});		
-		this.indexBufferY = shader.createIndexBuffer(new int[] {0,2});		
-		this.indexBufferZ = shader.createIndexBuffer(new int[] {0,3});		
+		this.indexBufferX = GLBuffers.createIndexBuffer(new int[] {0,1});		
+		this.indexBufferY = GLBuffers.createIndexBuffer(new int[] {0,2});		
+		this.indexBufferZ = GLBuffers.createIndexBuffer(new int[] {0,3});		
 	}
 	
 
