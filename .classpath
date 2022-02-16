@@ -6,6 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/comp3170-21s1-jogl-240"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/comp3170-jogl-240"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
