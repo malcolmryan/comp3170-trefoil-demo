@@ -56,25 +56,25 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 		// set up a GL canvas
 		GLProfile profile = GLProfile.get(GLProfile.GL4);		 
 		GLCapabilities capabilities = new GLCapabilities(profile);
-		this.canvas = new GLCanvas(capabilities);
-		this.canvas.addGLEventListener(this);
-		this.add(canvas);
+		canvas = new GLCanvas(capabilities);
+		canvas.addGLEventListener(this);
+		add(canvas);
 		
 		// set up Animator		
 
-		this.animator = new Animator(canvas);
-		this.animator.start();
-		this.oldTime = System.currentTimeMillis();		
+		animator = new Animator(canvas);
+		animator.start();
+		oldTime = System.currentTimeMillis();		
 
 		// input
 		
-		this.input = new InputManager(canvas);
+		input = new InputManager(canvas);
 		
 		// set up the JFrame
 		
-		this.setSize(width,height);
-		this.setVisible(true);
-		this.addWindowListener(new WindowAdapter() {
+		setSize(width,height);
+		setVisible(true);
+		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				System.exit(0);
 			}
@@ -92,11 +92,11 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 		gl.glEnable(GL.GL_CULL_FACE);
 		gl.glCullFace(GL.GL_BACK);
 		
-		this.axes = new Axes();
-		this.trefoil = new Trefoil();
+		axes = new Axes();
+		trefoil = new Trefoil();
 		
-		this.viewMatrix = new Matrix4f();
-		this.projectionMatrix = new Matrix4f();
+		viewMatrix = new Matrix4f();
+		projectionMatrix = new Matrix4f();
 	}
 
 	
@@ -108,7 +108,7 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 		oldTime = time;
 		
 		Vector3f angle = new Vector3f();
-		this.trefoil.getAngle(angle);
+		trefoil.getAngle(angle);
 
 		if (input.isKeyDown(KeyEvent.VK_LEFT)) {
 			angle.y += ROTATION_SPEED * deltaTime;			
@@ -123,17 +123,25 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 			angle.x -= ROTATION_SPEED * deltaTime;			
 		}
 			
+		if (input.isKeyDown(KeyEvent.VK_PAGE_DOWN)) {
+			cameraDistance -= CAMERA_MOVE * deltaTime;
+		}
+		if (input.isKeyDown(KeyEvent.VK_PAGE_UP)) {
+			cameraDistance += CAMERA_MOVE * deltaTime;
+		}
 		
-		this.trefoil.setAngle(angle);
+		trefoil.setAngle(angle);
 				
 		input.clear();
 	}
 	
-	private static final float CAMERA_DISTANCE = 5;
+	private float cameraDistance = 3;
+	private static final float CAMERA_MOVE = 1;
 	private static final float CAMERA_WIDTH = 8;
 	private static final float CAMERA_HEIGHT = 8;
 	private static final float CAMERA_NEAR = 1;
 	private static final float CAMERA_FAR = 10;
+	private static final float CAMERA_FOVY = TAU / 6; 
 	
 	@Override	
 	public void display(GLAutoDrawable arg0) {
@@ -156,17 +164,21 @@ public class TrefoilDemo extends JFrame implements GLEventListener {
 		//       Z
 		
 		viewMatrix.identity();
-		viewMatrix.translate(0,0,CAMERA_DISTANCE);
+		viewMatrix.translate(0,0,cameraDistance);
 		viewMatrix.invert();
 
 		projectionMatrix.setOrtho(
 				-CAMERA_WIDTH/2, CAMERA_WIDTH/2, 
 				-CAMERA_HEIGHT/2, CAMERA_HEIGHT/2, 
 				CAMERA_NEAR, CAMERA_FAR);
-				
+
+//		projectionMatrix.setPerspective(CAMERA_FOVY, 
+//				CAMERA_WIDTH / CAMERA_HEIGHT,
+//				CAMERA_NEAR, CAMERA_FAR);
+
 		// draw the scene
-		this.axes.draw(viewMatrix, projectionMatrix);
-		this.trefoil.draw(viewMatrix, projectionMatrix);
+		//axes.draw(viewMatrix, projectionMatrix);
+		trefoil.draw(viewMatrix, projectionMatrix);
 		
 	}
 

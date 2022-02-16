@@ -17,13 +17,13 @@ import comp3170.demos.trefoil.textures.TextureLibrary;
 
 public class Trefoil extends SceneObject {
 	
-	private final static String VERTEX_SHADER = "diffuseVertex.glsl";
-	private final static String FRAGMENT_SHADER = "diffuseFragment.glsl";
+	private final static String VERTEX_SHADER = "vertex.glsl";
+	private final static String FRAGMENT_SHADER = "fragment.glsl";
 
 	private static final float TAU = (float) (Math.PI * 2);
 	
 	private static final int NSLICES = 100;
-	private static final float CROSS_SECTION_SCALE = 0.4f;
+	private static final float CROSS_SECTION_SCALE = 0.15f;
 	private static final float U_MAX = 20;
 	private static final float V_MAX = 1;	
 	private static final String TEXTURE = "wood.jpg";
@@ -135,9 +135,9 @@ public class Trefoil extends SceneObject {
 			
 			Vector4f origin = new Vector4f(0,0,0,1);
 			
-			origin.x = (float) (Math.sin(t) + 2 * Math.sin(2 * t));
-			origin.y = (float) (Math.cos(t) - 2 * Math.cos(2 * t));
-			origin.z = (float) -Math.sin(3*t);
+			origin.x = (float) (Math.sin(t) + 2 * Math.sin(2 * t)) /3;
+			origin.y = (float) (Math.cos(t) - 2 * Math.cos(2 * t)) /3;
+			origin.z = (float) -Math.sin(3*t)/3;
 
 			kAxis.x = (float) (Math.cos(t) + 4 * Math.cos(2 * t));
 			kAxis.y = (float) (-Math.sin(t) + 4 * Math.sin(2 * t));
@@ -250,25 +250,29 @@ public class Trefoil extends SceneObject {
 
 		shader.enable();		
 
-		calcModelMatrix();
-		shader.setUniform("u_modelMatrix", modelMatrix);
-		shader.setUniform("u_viewMatrix", viewMatrix);
-		shader.setUniform("u_projectionMatrix", projectionMatrix);
-		shader.setUniform("u_normalMatrix", modelMatrix.normal(normalMatrix));
+//		calcModelMatrix();
+//		shader.setUniform("u_modelMatrix", modelMatrix);
+//		shader.setUniform("u_viewMatrix", viewMatrix);
+//		shader.setUniform("u_projectionMatrix", projectionMatrix);
 		
 		shader.setAttribute("a_position", vertexBuffer);		
-		shader.setAttribute("a_texcoord", uvBuffer);		
-		shader.setAttribute("a_normal", normalBuffer);		
+//		shader.setAttribute("a_colour", colourBuffer);		
 
-		gl.glActiveTexture(GL.GL_TEXTURE0);
-		gl.glBindTexture(GL.GL_TEXTURE_2D, this.texture);
-		shader.setUniform("u_texture", 0);
+//		shader.setAttribute("a_texcoord", uvBuffer);		
+//		gl.glActiveTexture(GL.GL_TEXTURE0);
+//		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
+//		shader.setUniform("u_texture", 0);
 		
-		shader.setUniform("u_ambientIntensity", AMBIENT_INTENSITY);
-		shader.setUniform("u_diffuseIntensity", DIFFUSE_INTENSITY);
-		shader.setUniform("u_lightDirection", LIGHT_DIRECTION);
+//		shader.setUniform("u_normalMatrix", modelMatrix.normal(normalMatrix));
+//		shader.setAttribute("a_normal", normalBuffer);		
+
+//		shader.setUniform("u_ambientIntensity", AMBIENT_INTENSITY);
+//		shader.setUniform("u_diffuseIntensity", DIFFUSE_INTENSITY);
+//		shader.setUniform("u_lightDirection", LIGHT_DIRECTION);
 		
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+		gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL4.GL_LINE);
 		gl.glDrawElements(GL.GL_TRIANGLES, indices.length, GL.GL_UNSIGNED_INT, 0);		
 
 	}
